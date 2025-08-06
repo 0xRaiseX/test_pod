@@ -137,10 +137,10 @@ def test_database_connectivity(postgres_url: str, mysql_url: str, mongodb_url: s
 
 # Example usage:
 # postgres_url = "postgresql://user:password@localhost:5432/testdb"
-postgres_url = "postgresql://admin:XUbuYxEB@wcd485e154d2-db/app"
+postgres_url = "postgresql://admin:WcFnjJdx@vd4a810ee3b1-db/app" 
 # mysql_url = "host=localhost;user=root;password=password;database=testdb"
-mysql_url = "mysql://admin:zXOPr7ZC@i31261b1d40e-db/app"
+mysql_url = "mysql://admin:gowDeWXw@j2e59293926c-db/app"
 # mongodb_url = "mongodb://localhost:27017/"
-mongodb_url = "mongodb://admin:DwIQpuUj@vf1121a8dd5f-db/app?authSource=admin"
+mongodb_url = "mongodb://admin:aHlWu5UF@f58dd222870d-db/app?authSource=admin"
 results = test_database_connectivity(postgres_url, mysql_url, mongodb_url)
 print(results)
