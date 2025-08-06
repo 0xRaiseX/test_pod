@@ -2,6 +2,7 @@ import psycopg2
 from mysql.connector import connect as mysql_connect
 from pymongo import MongoClient
 from datetime import datetime
+from urllib.parse import urlparse
 
 def test_database_connectivity(postgres_url: str, mysql_url: str, mongodb_url: str) -> dict:
     """
@@ -64,12 +65,24 @@ def test_database_connectivity(postgres_url: str, mysql_url: str, mongodb_url: s
 
     # MySQL Test
     try:
-        mysql_conn = mysql_connect(
-            **{k: v for k, v in [x.split('=') for x in mysql_url.split(';') if x]}
-        )
+        parsed_url = urlparse(mysql_url)
+        if parsed_url.scheme != 'mysql':
+            raise ValueError("Invalid MySQL URL scheme. Expected 'mysql://'")
+
+        # Extract connection parameters
+        config = {
+            'host': parsed_url.hostname or 'localhost',
+            'port': parsed_url.port or 3306,
+            'user': parsed_url.username,
+            'password': parsed_url.password,
+            'database': parsed_url.path.lstrip('/')
+        }
+
+        # Connect to MySQL
+        mysql_conn = mysql_connect(**config)
         results['mysql']['connection'] = True
         mysql_cursor = mysql_conn.cursor()
-        
+
         # Create table
         mysql_cursor.execute("""
             CREATE TABLE IF NOT EXISTS test_table (
@@ -79,24 +92,23 @@ def test_database_connectivity(postgres_url: str, mysql_url: str, mongodb_url: s
                 value INT
             )
         """)
-        
+
         # Write data
         mysql_cursor.execute(
             "INSERT INTO test_table (name, timestamp, value) VALUES (%s, %s, %s)",
             (test_data['name'], test_data['timestamp'], test_data['value'])
         )
         results['mysql']['write'] = True
-        
+
         # Read data
         mysql_cursor.execute("SELECT name, timestamp, value FROM test_table WHERE name = %s", (test_data['name'],))
         read_data = mysql_cursor.fetchone()
         if read_data and read_data[0] == test_data['name']:
             results['mysql']['read'] = True
-            
+
         mysql_conn.commit()
         mysql_cursor.close()
         mysql_conn.close()
-        
     except Exception as e:
         results['mysql']['error'] = str(e)
 
